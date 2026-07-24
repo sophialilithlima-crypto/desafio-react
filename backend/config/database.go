@@ -12,7 +12,7 @@ var DB *sql.DB
 
 func ConnectDatabase() {
 
-	connection := "host=localhost port=5432 user=postgres password=S0ph14l1l1th dbname=desafio sslmode=disable"
+	connection := "host=localhost port=5432 user=postgres password=S0ph14l1l1th dbname=desafio-react2 sslmode=disable"
 
 	database, err := sql.Open("postgres", connection)
 
