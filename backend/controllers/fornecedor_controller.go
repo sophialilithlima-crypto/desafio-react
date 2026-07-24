@@ -4,15 +4,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sophialilithlima-crypto/desafio-react-backend/config"
 	"github.com/sophialilithlima-crypto/desafio-react-backend/models"
+	"github.com/sophialilithlima-crypto/desafio-react-backend/services"
 )
+
+var fornecedorService = services.NewFornecedorService()
+
 
 func GetFornecedores(c *gin.Context) {
 
-	rows, err := config.DB.Query(
-		"SELECT id, nome, email FROM fornecedor",
-	)
+	fornecedores, err := fornecedorService.GetAll()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -21,37 +22,15 @@ func GetFornecedores(c *gin.Context) {
 		return
 	}
 
-	defer rows.Close()
-
-	var fornecedores []models.Fornecedor
-
-	for rows.Next() {
-
-		var fornecedor models.Fornecedor
-
-		err := rows.Scan(
-			&fornecedor.ID,
-			&fornecedor.Nome,
-			&fornecedor.Email,
-		)
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"erro": err.Error(),
-			})
-			return
-		}
-
-		fornecedores = append(fornecedores, fornecedor)
-	}
-
 	c.JSON(http.StatusOK, fornecedores)
 }
+
 
 
 func CreateFornecedor(c *gin.Context) {
 
 	var fornecedor models.Fornecedor
+
 
 	if err := c.ShouldBindJSON(&fornecedor); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -61,11 +40,7 @@ func CreateFornecedor(c *gin.Context) {
 	}
 
 
-	err := config.DB.QueryRow(
-		"INSERT INTO fornecedor (nome, email) VALUES ($1, $2) RETURNING id",
-		fornecedor.Nome,
-		fornecedor.Email,
-	).Scan(&fornecedor.ID)
+	err := fornecedorService.Create(&fornecedor)
 
 
 	if err != nil {
@@ -80,11 +55,14 @@ func CreateFornecedor(c *gin.Context) {
 }
 
 
+
 func UpdateFornecedor(c *gin.Context) {
 
 	id := c.Param("id")
 
+
 	var fornecedor models.Fornecedor
+
 
 	if err := c.ShouldBindJSON(&fornecedor); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -94,12 +72,7 @@ func UpdateFornecedor(c *gin.Context) {
 	}
 
 
-	_, err := config.DB.Exec(
-		"UPDATE fornecedor SET nome=$1, email=$2 WHERE id=$3",
-		fornecedor.Nome,
-		fornecedor.Email,
-		id,
-	)
+	err := fornecedorService.Update(id, fornecedor)
 
 
 	if err != nil {
@@ -116,15 +89,13 @@ func UpdateFornecedor(c *gin.Context) {
 }
 
 
+
 func DeleteFornecedor(c *gin.Context) {
 
 	id := c.Param("id")
 
 
-	_, err := config.DB.Exec(
-		"DELETE FROM fornecedor WHERE id=$1",
-		id,
-	)
+	err := fornecedorService.Delete(id)
 
 
 	if err != nil {
