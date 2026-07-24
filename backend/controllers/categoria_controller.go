@@ -4,44 +4,21 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sophialilithlima-crypto/desafio-react-backend/config"
 	"github.com/sophialilithlima-crypto/desafio-react-backend/models"
+	"github.com/sophialilithlima-crypto/desafio-react-backend/services"
 )
+
+var categoriaService = services.NewCategoriaService()
 
 func GetCategorias(c *gin.Context) {
 
-	rows, err := config.DB.Query(
-		"SELECT id, nome FROM categoria",
-	)
+	categorias, err := categoriaService.GetAll()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"erro": err.Error(),
 		})
 		return
-	}
-
-	defer rows.Close()
-
-	var categorias []models.Categoria
-
-	for rows.Next() {
-
-		var categoria models.Categoria
-
-		err := rows.Scan(
-			&categoria.ID,
-			&categoria.Nome,
-		)
-
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"erro": err.Error(),
-			})
-			return
-		}
-
-		categorias = append(categorias, categoria)
 	}
 
 	c.JSON(http.StatusOK, categorias)
@@ -51,7 +28,6 @@ func CreateCategoria(c *gin.Context) {
 
 	var categoria models.Categoria
 
-	// pega os dados enviados pelo JSON
 	if err := c.ShouldBindJSON(&categoria); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"erro": "Dados inválidos",
@@ -59,11 +35,7 @@ func CreateCategoria(c *gin.Context) {
 		return
 	}
 
-	// salva no banco
-	err := config.DB.QueryRow(
-		"INSERT INTO categoria (nome) VALUES ($1) RETURNING id",
-		categoria.Nome,
-	).Scan(&categoria.ID)
+	err := categoriaService.Create(&categoria)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -88,11 +60,7 @@ func UpdateCategoria(c *gin.Context) {
 		return
 	}
 
-	_, err := config.DB.Exec(
-		"UPDATE categoria SET nome = $1 WHERE id = $2",
-		categoria.Nome,
-		id,
-	)
+	err := categoriaService.Update(id, categoria)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -110,10 +78,7 @@ func DeleteCategoria(c *gin.Context) {
 
 	id := c.Param("id")
 
-	_, err := config.DB.Exec(
-		"DELETE FROM categoria WHERE id = $1",
-		id,
-	)
+	err := categoriaService.Delete(id)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

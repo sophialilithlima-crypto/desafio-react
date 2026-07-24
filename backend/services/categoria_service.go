@@ -5,8 +5,15 @@ import (
 	"github.com/sophialilithlima-crypto/desafio-react-backend/repositories"
 )
 
+type CategoriaRepository interface {
+	GetAll() ([]models.Categoria, error)
+	Create(categoria *models.Categoria) error
+	Update(id string, categoria models.Categoria) error
+	Delete(id string) error
+}
+
 type CategoriaService struct {
-	repository *repositories.CategoriaRepository
+	repository CategoriaRepository
 }
 
 func NewCategoriaService() *CategoriaService {
