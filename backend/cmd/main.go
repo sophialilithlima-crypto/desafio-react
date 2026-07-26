@@ -29,6 +29,10 @@ func main() {
 	router.PUT("/produto/:id", controllers.UpdateProduto)
 	router.DELETE("/produto/:id", controllers.DeleteProduto)
 
+	router.GET("/produto/:id", controllers.GetProdutoByID)
+	router.GET("/categoria/:id", controllers.GetCategoriaByID)
+	router.GET("/fornecedor/:id", controllers.GetFornecedorByID)
+
 	fmt.Println("Servidor rodando na porta 8080")
 
 	router.Run(":8080")

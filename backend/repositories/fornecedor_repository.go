@@ -11,34 +11,53 @@ func NewFornecedorRepository() *FornecedorRepository {
 	return &FornecedorRepository{}
 }
 
+func (r *FornecedorRepository) GetAll(page int, limit int, busca string) ([]models.Fornecedor, int, error) {
 
-func (r *FornecedorRepository) GetAll() ([]models.Fornecedor, error) {
+	offset := (page - 1) * limit
+
+	var total int
+
+	err := config.DB.QueryRow(
+		`
+		SELECT COUNT(*)
+		FROM fornecedor
+		WHERE nome ILIKE $1
+		`,
+		"%"+busca+"%",
+	).Scan(&total)
+
+	if err != nil {
+		return nil, 0, err
+	}
 
 	rows, err := config.DB.Query(
 		`
-		SELECT 
+		SELECT
 			id,
 			nome,
 			email,
 			telefone
 		FROM fornecedor
+		WHERE nome ILIKE $1
+		ORDER BY nome
+		LIMIT $2 OFFSET $3
 		`,
+		"%"+busca+"%",
+		limit,
+		offset,
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
 
-
 	var fornecedores []models.Fornecedor
-
 
 	for rows.Next() {
 
 		var fornecedor models.Fornecedor
-
 
 		err := rows.Scan(
 			&fornecedor.ID,
@@ -47,20 +66,40 @@ func (r *FornecedorRepository) GetAll() ([]models.Fornecedor, error) {
 			&fornecedor.Telefone,
 		)
 
-
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
-
 
 		fornecedores = append(fornecedores, fornecedor)
 	}
 
-
-	return fornecedores, nil
+	return fornecedores, total, nil
 }
 
+func (r *FornecedorRepository) GetByID(id string) (models.Fornecedor, error) {
 
+	var fornecedor models.Fornecedor
+
+	err := config.DB.QueryRow(
+		`
+		SELECT
+			id,
+			nome,
+			email,
+			telefone
+		FROM fornecedor
+		WHERE id = $1
+		`,
+		id,
+	).Scan(
+		&fornecedor.ID,
+		&fornecedor.Nome,
+		&fornecedor.Email,
+		&fornecedor.Telefone,
+	)
+
+	return fornecedor, err
+}
 
 func (r *FornecedorRepository) Create(fornecedor *models.Fornecedor) error {
 
@@ -81,10 +120,7 @@ func (r *FornecedorRepository) Create(fornecedor *models.Fornecedor) error {
 	).Scan(&fornecedor.ID)
 }
 
-
-
 func (r *FornecedorRepository) Update(id string, fornecedor models.Fornecedor) error {
-
 
 	_, err := config.DB.Exec(
 		`
@@ -101,20 +137,15 @@ func (r *FornecedorRepository) Update(id string, fornecedor models.Fornecedor) e
 		id,
 	)
 
-
 	return err
 }
 
-
-
 func (r *FornecedorRepository) Delete(id string) error {
-
 
 	_, err := config.DB.Exec(
 		"DELETE FROM fornecedor WHERE id=$1",
 		id,
 	)
-
 
 	return err
 }
