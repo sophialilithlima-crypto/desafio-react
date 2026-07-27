@@ -1,24 +1,24 @@
-import { useEffect, useState } from "react"
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Navbar from "./components/Navbar";
+
+import Produto from "./pages/Produto";
+import Categoria from "./pages/Categoria";
+import Fornecedor from "./pages/Fornecedor";
 
 function App() {
-
-  const [mensagem, setMensagem] = useState("")
-
-  useEffect(() => {
-
-    fetch("http://localhost:8080")
-      .then(res => res.text())
-      .then(data => setMensagem(data))
-
-  }, [])
-
-
   return (
-    <>
-      <h1>Frontend React</h1>
-      <p>{mensagem}</p>
-    </>
-  )
+    <BrowserRouter>
+      <Navbar />
+
+      <Routes>
+        <Route path="/" element={<Produto />} />
+        <Route path="/produto" element={<Produto />} />
+        <Route path="/categoria" element={<Categoria />} />
+        <Route path="/fornecedor" element={<Fornecedor />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

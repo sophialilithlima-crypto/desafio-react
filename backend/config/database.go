@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	_ "github.com/lib/pq"
 )
@@ -12,7 +13,20 @@ var DB *sql.DB
 
 func ConnectDatabase() {
 
-	connection := "host=localhost port=5432 user=postgres password=S0ph14l1l1th dbname=desafio-react2 sslmode=disable"
+	host := getEnv("DB_HOST", "localhost")
+	port := getEnv("DB_PORT", "5432")
+	user := getEnv("DB_USER", "postgres")
+	password := getEnv("DB_PASSWORD", "S0ph14l1l1th")
+	dbname := getEnv("DB_NAME", "desafio-react2")
+
+	connection := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host,
+		port,
+		user,
+		password,
+		dbname,
+	)
 
 	database, err := sql.Open("postgres", connection)
 
@@ -29,4 +43,15 @@ func ConnectDatabase() {
 	fmt.Println("Banco conectado com sucesso!")
 
 	DB = database
+}
+
+func getEnv(chave string, valorPadrao string) string {
+
+	valor := os.Getenv(chave)
+
+	if valor == "" {
+		return valorPadrao
+	}
+
+	return valor
 }
