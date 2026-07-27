@@ -73,6 +73,10 @@ func (r *FornecedorRepository) GetAll(page int, limit int, busca string) ([]mode
 		fornecedores = append(fornecedores, fornecedor)
 	}
 
+	if err = rows.Err(); err != nil {
+		return nil, 0, err
+	}
+
 	return fornecedores, total, nil
 }
 

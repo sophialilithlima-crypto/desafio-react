@@ -5,12 +5,12 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/sophialilithlima-crypto/desafio-react-backend/models"
 	"github.com/sophialilithlima-crypto/desafio-react-backend/services"
 )
 
 var categoriaService = services.NewCategoriaService()
-
 
 func GetCategorias(c *gin.Context) {
 
@@ -20,233 +20,152 @@ func GetCategorias(c *gin.Context) {
 		page = 1
 	}
 
-
 	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
 
 	if err != nil || limit < 1 {
 		limit = 10
 	}
 
-
 	busca := c.DefaultQuery("q", "")
-
 
 	categorias, total, err := categoriaService.GetAll(page, limit, busca)
 
-
 	if err != nil {
-
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"data": nil,
-			"message": err.Error(),
+			"data":  nil,
+			"error": err.Error(),
+			"meta":  nil,
 		})
-
 		return
 	}
 
-
-
 	c.JSON(http.StatusOK, gin.H{
-
 		"data": categorias,
-
-		"message": "Categorias encontradas",
-
+		"error": nil,
 		"meta": gin.H{
-
 			"total": total,
-
-			"page": page,
-
+			"page":  page,
 			"limit": limit,
 		},
 	})
 }
 
-
-
-
 func GetCategoriaByID(c *gin.Context) {
-
 
 	id := c.Param("id")
 
-
 	categoria, err := categoriaService.GetByID(id)
-
 
 	if err != nil {
 
 		c.JSON(http.StatusNotFound, gin.H{
-
-			"data": nil,
-
-			"message": "Categoria não encontrada",
+			"data":  nil,
+			"error": "Categoria não encontrada",
+			"meta":  nil,
 		})
 
 		return
 	}
 
-
-
 	c.JSON(http.StatusOK, gin.H{
-
-		"data": categoria,
-
-		"message": "Categoria encontrada",
+		"data":  categoria,
+		"error": nil,
+		"meta":  nil,
 	})
 }
-
-
-
-
 
 func CreateCategoria(c *gin.Context) {
 
-
 	var categoria models.Categoria
-
-
 
 	if err := c.ShouldBindJSON(&categoria); err != nil {
 
-
 		c.JSON(http.StatusBadRequest, gin.H{
-
-			"data": nil,
-
-			"message": "Dados inválidos",
+			"data":  nil,
+			"error": "Dados inválidos",
+			"meta":  nil,
 		})
 
 		return
 	}
-
-
 
 	err := categoriaService.Create(&categoria)
 
-
-
 	if err != nil {
 
-
-		c.JSON(http.StatusConflict, gin.H{
-
-			"data": nil,
-
-			"message": err.Error(),
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"data":  nil,
+			"error": err.Error(),
+			"meta":  nil,
 		})
-
 
 		return
 	}
 
-
-
-
 	c.JSON(http.StatusCreated, gin.H{
-
-		"data": categoria,
-
-		"message": "Categoria criada com sucesso",
+		"data":  categoria,
+		"error": nil,
+		"meta":  nil,
 	})
 }
-
-
-
-
 
 func UpdateCategoria(c *gin.Context) {
 
-
 	id := c.Param("id")
-
 
 	var categoria models.Categoria
 
-
-
 	if err := c.ShouldBindJSON(&categoria); err != nil {
 
-
 		c.JSON(http.StatusBadRequest, gin.H{
-
-			"data": nil,
-
-			"message": "Dados inválidos",
+			"data":  nil,
+			"error": "Dados inválidos",
+			"meta":  nil,
 		})
-
 
 		return
 	}
-
-
 
 	err := categoriaService.Update(id, categoria)
 
-
-
 	if err != nil {
 
-
-		c.JSON(http.StatusConflict, gin.H{
-
-			"data": nil,
-
-			"message": err.Error(),
+		c.JSON(http.StatusUnprocessableEntity, gin.H{
+			"data":  nil,
+			"error": err.Error(),
+			"meta":  nil,
 		})
-
 
 		return
 	}
 
-
-
-
 	c.JSON(http.StatusOK, gin.H{
-
-		"data": nil,
-
-		"message": "Categoria atualizada com sucesso",
+		"data":  categoria,
+		"error": nil,
+		"meta":  nil,
 	})
 }
 
-
-
-
-
 func DeleteCategoria(c *gin.Context) {
-
 
 	id := c.Param("id")
 
-
-
 	err := categoriaService.Delete(id)
-
-
 
 	if err != nil {
 
-
 		c.JSON(http.StatusConflict, gin.H{
-
-			"data": nil,
-
-			"message": err.Error(),
+			"data":  nil,
+			"error": err.Error(),
+			"meta":  nil,
 		})
-
 
 		return
 	}
 
-
-
-
 	c.JSON(http.StatusOK, gin.H{
-
-		"data": nil,
-
-		"message": "Categoria removida com sucesso",
+		"data":  nil,
+		"error": nil,
+		"meta":  nil,
 	})
 }

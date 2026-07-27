@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import "../styles/Categoria.css";
 
 
 function Categoria() {
@@ -7,54 +8,30 @@ function Categoria() {
 
     const [categorias, setCategorias] = useState([]);
 
+    const [nome, setNome] = useState("");
 
-    const [editando, setEditando] = useState(false);
+    const [editando, setEditando] = useState(null);
 
-
-    const [idEditando, setIdEditando] = useState(null);
-
-
-
-    const [formulario, setFormulario] = useState({
-
-        nome: ""
-
-    });
+    const [mensagem, setMensagem] = useState("");
 
 
 
 
 
-
-
-
-    async function buscarCategorias() {
-
+    async function carregarCategorias() {
 
         try {
 
+            const response = await api.get("/categorias");
 
-            const resposta = await api.get("/categorias");
+            setCategorias(response.data.data || []);
 
+        } catch (error) {
 
-            setCategorias(
-                resposta.data.data || []
-            );
-
-
-
-        } catch (erro) {
-
-
-            console.log(
-                "Erro ao buscar categorias:",
-                erro
-            );
-
+            console.log(error);
 
         }
 
-
     }
 
 
@@ -62,20 +39,11 @@ function Categoria() {
 
 
 
+    useEffect(() => {
 
-    function alterarCampo(e) {
+        carregarCategorias();
 
-
-        setFormulario({
-
-            ...formulario,
-
-            [e.target.name]: e.target.value
-
-        });
-
-
-    }
+    }, []);
 
 
 
@@ -83,67 +51,48 @@ function Categoria() {
 
 
 
-
-    async function salvarCategoria(e) {
-
+    async function salvar(e) {
 
         e.preventDefault();
 
 
+        if(!nome.trim()){
 
-        const categoria = {
+            setMensagem("Informe o nome da categoria");
 
+            return;
 
-            nome: formulario.nome
-
-
-        };
-
-
+        }
 
 
 
         try {
-
 
 
             if(editando){
 
 
+                await api.put(`/categorias/${editando}`, {
 
-                await api.put(
+                    nome
 
-                    `/categorias/${idEditando}`,
-
-                    categoria
-
-                );
+                });
 
 
-
-                alert(
-                    "Categoria atualizada com sucesso!"
-                );
+                setMensagem("Categoria atualizada com sucesso");
 
 
-
-            } else {
-
+            }else{
 
 
-                await api.post(
+                await api.post("/categorias", {
 
-                    "/categorias",
+                    nome
 
-                    categoria
-
-                );
+                });
 
 
-
-                alert(
-                    "Categoria cadastrada com sucesso!"
-                );
+                setMensagem("Categoria cadastrada com sucesso");
 
 
             }
@@ -151,32 +100,19 @@ function Categoria() {
 
 
 
-
-
             limparFormulario();
 
-
-            buscarCategorias();
-
+            carregarCategorias();
 
 
 
-
-        } catch (erro) {
-
+        } catch(error){
 
 
-            console.log(
-                "Erro ao salvar categoria:",
-                erro
-            );
+            console.log(error);
 
 
-
-            alert(
-                "Erro ao salvar categoria"
-            );
-
+            setMensagem("Erro ao salvar categoria");
 
 
         }
@@ -191,28 +127,14 @@ function Categoria() {
 
 
 
-
-    function editarCategoria(categoria) {
-
+    function editar(categoria){
 
 
-        setEditando(true);
+        setNome(categoria.nome);
 
+        setEditando(categoria.id);
 
-
-        setIdEditando(
-            categoria.id
-        );
-
-
-
-        setFormulario({
-
-            nome: categoria.nome
-
-        });
-
-
+        setMensagem("");
 
     }
 
@@ -223,46 +145,12 @@ function Categoria() {
 
 
 
-
-    function limparFormulario() {
-
-
-
-        setFormulario({
-
-            nome: ""
-
-        });
-
-
-
-        setEditando(false);
-
-
-        setIdEditando(null);
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    async function excluirCategoria(id) {
-
+    async function excluir(id){
 
 
         const confirmar = window.confirm(
-
-            "Deseja realmente excluir esta categoria?"
-
+            "Deseja realmente excluir essa categoria?"
         );
-
 
 
         if(!confirmar){
@@ -274,54 +162,30 @@ function Categoria() {
 
 
 
+        try{
 
 
-        try {
+            await api.delete(`/categorias/${id}`);
 
 
-
-            await api.delete(
-
-                `/categorias/${id}`
-
+            setMensagem(
+                "Categoria removida com sucesso"
             );
 
 
+            carregarCategorias();
 
-            alert(
 
-                "Categoria excluída com sucesso!"
 
+        }catch(error){
+
+
+            console.log(error);
+
+
+            setMensagem(
+                "Não foi possível excluir"
             );
-
-
-
-            buscarCategorias();
-
-
-
-
-
-        } catch (erro) {
-
-
-
-            console.log(
-
-                "Erro ao excluir categoria:",
-
-                erro
-
-            );
-
-
-
-            alert(
-
-                "Erro ao excluir categoria"
-
-            );
-
 
 
         }
@@ -336,15 +200,15 @@ function Categoria() {
 
 
 
-
-    useEffect(()=>{
-
-
-        buscarCategorias();
+    function limparFormulario(){
 
 
-    }, []);
+        setNome("");
 
+        setEditando(null);
+
+
+    }
 
 
 
@@ -355,289 +219,215 @@ function Categoria() {
 
     return (
 
-        <div>
-
+        <div className="pagina">
 
 
             <h1>
-
                 Categorias
-
             </h1>
 
 
 
 
-
-            <h2>
-
-                {
-
-                    editando
-
-                    ?
-
-                    "Editar Categoria"
-
-                    :
-
-                    "Cadastrar Categoria"
-
-                }
+            <div className="card">
 
 
-            </h2>
+                <form onSubmit={salvar}>
+
+
+                    <input
+
+                        type="text"
+
+                        placeholder="Nome da categoria"
+
+                        value={nome}
+
+                        onChange={(e)=>setNome(e.target.value)}
+
+                    />
 
 
 
+                    <div className="botoes">
 
 
+                        <button className="btn salvar">
 
+                            {
+                                editando 
+                                ? 
+                                "Atualizar"
+                                :
+                                "Cadastrar"
+                            }
 
-            <form onSubmit={salvarCategoria}>
-
-
-
-                <input
-
-
-                    type="text"
-
-
-                    name="nome"
-
-
-                    placeholder="Nome da categoria"
-
-
-                    value={formulario.nome}
-
-
-                    onChange={alterarCampo}
-
-
-                />
+                        </button>
 
 
 
 
+                        {
+                            editando && (
 
-                <button type="submit">
+                                <button
+
+                                    type="button"
+
+                                    className="btn cancelar"
+
+                                    onClick={limparFormulario}
+
+                                >
+
+                                    Cancelar
+
+                                </button>
+
+                            )
+                        }
 
 
-                    {
 
-                        editando
-
-                        ?
-
-                        "Atualizar"
-
-                        :
-
-                        "Cadastrar"
-
-                    }
+                    </div>
 
 
-                </button>
 
-
+                </form>
 
 
 
 
                 {
+                    mensagem &&
 
+                    <p className="mensagem">
 
-                    editando &&
+                        {mensagem}
 
-
-                    <button
-
-
-                        type="button"
-
-
-                        onClick={limparFormulario}
-
-
-                    >
-
-                        Cancelar
-
-
-                    </button>
-
+                    </p>
 
                 }
 
 
+            </div>
 
 
 
-            </form>
 
 
 
 
+            <div className="tabela-container">
 
 
+                <table>
 
 
+                    <thead>
 
-            <h2>
 
-                Categorias cadastradas
+                        <tr>
 
-            </h2>
 
+                            <th>ID</th>
 
+                            <th>Nome</th>
 
+                            <th>Ações</th>
 
 
+                        </tr>
 
 
+                    </thead>
 
-            <table border="1">
 
 
-                <thead>
 
+                    <tbody>
 
-                    <tr>
 
+                        {
+                            categorias.map((categoria)=>(
 
-                        <th>
 
-                            ID
+                                <tr key={categoria.id}>
 
-                        </th>
 
+                                    <td>
 
+                                        {categoria.id}
 
-                        <th>
+                                    </td>
 
-                            Nome
 
-                        </th>
 
+                                    <td>
 
+                                        {categoria.nome}
 
-                        <th>
+                                    </td>
 
-                            Ações
 
-                        </th>
 
+                                    <td>
 
-                    </tr>
 
+                                        <button
 
-                </thead>
+                                            className="btn editar"
 
+                                            onClick={()=>
+                                                editar(categoria)
+                                            }
 
+                                        >
 
+                                            Editar
 
+                                        </button>
 
 
 
-                <tbody>
 
 
+                                        <button
 
-                    {
+                                            className="btn excluir"
 
+                                            onClick={()=>
+                                                excluir(categoria.id)
+                                            }
 
-                        categorias.map((categoria)=>(
+                                        >
 
+                                            Excluir
 
+                                        </button>
 
-                            <tr key={categoria.id}>
 
 
-                                <td>
+                                    </td>
 
-                                    {categoria.id}
 
-                                </td>
 
+                                </tr>
 
 
+                            ))
+                        }
 
 
-                                <td>
 
-                                    {categoria.nome}
+                    </tbody>
 
-                                </td>
 
 
+                </table>
 
 
-
-                                <td>
-
-
-
-                                    <button
-
-
-                                        onClick={() =>
-                                            editarCategoria(categoria)
-                                        }
-
-
-                                    >
-
-                                        Editar
-
-
-                                    </button>
-
-
-
-
-
-
-
-                                    <button
-
-
-                                        onClick={() =>
-                                            excluirCategoria(categoria.id)
-                                        }
-
-
-                                    >
-
-                                        Excluir
-
-
-                                    </button>
-
-
-
-                                </td>
-
-
-
-                            </tr>
-
-
-
-                        ))
-
-
-                    }
-
-
-
-                </tbody>
-
-
-
-            </table>
+            </div>
 
 
 
@@ -646,7 +436,8 @@ function Categoria() {
         </div>
 
 
-    );
+    )
+
 
 
 }

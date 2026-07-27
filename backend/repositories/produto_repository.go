@@ -8,25 +8,17 @@ import (
 	"github.com/sophialilithlima-crypto/desafio-react-backend/models"
 )
 
-
 type ProdutoRepository struct{}
-
 
 func NewProdutoRepository() *ProdutoRepository {
 	return &ProdutoRepository{}
 }
 
-
-
-
 func (r *ProdutoRepository) GetAll(page int, limit int, busca string) ([]models.Produto, int, error) {
-
 
 	offset := (page - 1) * limit
 
-
 	var total int
-
 
 	err := config.DB.QueryRow(
 		`
@@ -37,14 +29,9 @@ func (r *ProdutoRepository) GetAll(page int, limit int, busca string) ([]models.
 		"%"+busca+"%",
 	).Scan(&total)
 
-
-
 	if err != nil {
 		return nil, 0, err
 	}
-
-
-
 
 	rows, err := config.DB.Query(
 		`
@@ -67,28 +54,17 @@ func (r *ProdutoRepository) GetAll(page int, limit int, busca string) ([]models.
 		offset,
 	)
 
-
-
 	if err != nil {
 		return nil, 0, err
 	}
 
-
-
 	defer rows.Close()
-
-
 
 	var produtos []models.Produto
 
-
-
 	for rows.Next() {
 
-
 		var produto models.Produto
-
-
 
 		err := rows.Scan(
 			&produto.ID,
@@ -101,35 +77,23 @@ func (r *ProdutoRepository) GetAll(page int, limit int, busca string) ([]models.
 			&produto.AtualizadoEm,
 		)
 
-
-
 		if err != nil {
 			return nil, 0, err
 		}
 
-
-
 		produtos = append(produtos, produto)
-
 	}
 
-
+	if err = rows.Err(); err != nil {
+		return nil, 0, err
+	}
 
 	return produtos, total, nil
-
 }
-
-
-
-
-
 
 func (r *ProdutoRepository) GetByID(id string) (models.Produto, error) {
 
-
 	var produto models.Produto
-
-
 
 	err := config.DB.QueryRow(
 		`
@@ -157,18 +121,10 @@ func (r *ProdutoRepository) GetByID(id string) (models.Produto, error) {
 		&produto.AtualizadoEm,
 	)
 
-
-
 	return produto, err
 }
 
-
-
-
-
-
 func (r *ProdutoRepository) Create(produto *models.Produto) error {
-
 
 	err := config.DB.QueryRow(
 		`
@@ -190,10 +146,7 @@ func (r *ProdutoRepository) Create(produto *models.Produto) error {
 		produto.CategoriaID,
 	).Scan(&produto.ID)
 
-
-
 	if err != nil {
-
 
 		if strings.Contains(err.Error(), "duplicate key") ||
 			strings.Contains(err.Error(), "duplicar valor da chave") {
@@ -201,24 +154,13 @@ func (r *ProdutoRepository) Create(produto *models.Produto) error {
 			return fmt.Errorf("produto com esse SKU já existe")
 		}
 
-
-
 		return err
 	}
-
-
 
 	return nil
 }
 
-
-
-
-
-
-
 func (r *ProdutoRepository) Update(id string, produto models.Produto) error {
-
 
 	_, err := config.DB.Exec(
 		`
@@ -240,10 +182,7 @@ func (r *ProdutoRepository) Update(id string, produto models.Produto) error {
 		id,
 	)
 
-
-
 	if err != nil {
-
 
 		if strings.Contains(err.Error(), "duplicate key") ||
 			strings.Contains(err.Error(), "duplicar valor da chave") {
@@ -251,31 +190,18 @@ func (r *ProdutoRepository) Update(id string, produto models.Produto) error {
 			return fmt.Errorf("produto com esse SKU já existe")
 		}
 
-
-
 		return err
 	}
-
-
 
 	return nil
 }
 
-
-
-
-
-
-
 func (r *ProdutoRepository) Delete(id string) error {
-
 
 	_, err := config.DB.Exec(
 		"DELETE FROM produto WHERE id=$1",
 		id,
 	)
-
-
 
 	return err
 }

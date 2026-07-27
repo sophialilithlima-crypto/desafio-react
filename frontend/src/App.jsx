@@ -2,23 +2,58 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 
-import Produto from "./pages/Produto";
+import Home from "./pages/Home";
 import Categoria from "./pages/Categoria";
 import Fornecedor from "./pages/Fornecedor";
+import Produto from "./pages/Produto";
+
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Navbar />
 
-      <Routes>
-        <Route path="/" element={<Produto />} />
-        <Route path="/produto" element={<Produto />} />
-        <Route path="/categoria" element={<Categoria />} />
-        <Route path="/fornecedor" element={<Fornecedor />} />
-      </Routes>
-    </BrowserRouter>
-  );
+
+    return (
+
+        <BrowserRouter>
+
+
+            <Navbar />
+
+
+            <Routes>
+
+
+                <Route 
+                    path="/" 
+                    element={<Home />} 
+                />
+
+
+                <Route 
+                    path="/categorias" 
+                    element={<Categoria />} 
+                />
+
+
+                <Route 
+                    path="/fornecedores" 
+                    element={<Fornecedor />} 
+                />
+
+
+                <Route 
+                    path="/produtos" 
+                    element={<Produto />} 
+                />
+
+
+            </Routes>
+
+
+        </BrowserRouter>
+
+    )
+
 }
+
 
 export default App;

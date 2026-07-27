@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import "../styles/Fornecedor.css";
 
 
 function Fornecedor() {
@@ -7,77 +8,44 @@ function Fornecedor() {
 
     const [fornecedores, setFornecedores] = useState([]);
 
+    const [nome, setNome] = useState("");
 
-    const [editando, setEditando] = useState(false);
+    const [email, setEmail] = useState("");
 
+    const [telefone, setTelefone] = useState("");
 
-    const [idEditando, setIdEditando] = useState(null);
+    const [editando, setEditando] = useState(null);
 
-
-
-    const [formulario, setFormulario] = useState({
-
-        nome: "",
-        email: "",
-        telefone: ""
-
-    });
+    const [mensagem, setMensagem] = useState("");
 
 
 
 
+    async function carregarFornecedores(){
 
+        try{
 
+            const response = await api.get("/fornecedores");
 
-    async function buscarFornecedores() {
+            setFornecedores(response.data.data || []);
 
+        }catch(error){
 
-        try {
-
-
-            const resposta = await api.get("/fornecedores");
-
-
-            setFornecedores(
-                resposta.data.data || []
-            );
-
-
-
-        } catch (erro) {
-
-
-            console.log(
-                "Erro ao buscar fornecedores:",
-                erro
-            );
-
+            console.log(error);
 
         }
 
-
     }
 
 
 
 
 
+    useEffect(()=>{
 
+        carregarFornecedores();
 
-
-    function alterarCampo(e) {
-
-
-        setFormulario({
-
-            ...formulario,
-
-            [e.target.name]: e.target.value
-
-        });
-
-
-    }
+    },[]);
 
 
 
@@ -85,161 +53,78 @@ function Fornecedor() {
 
 
 
-
-
-    function validarEmail(email) {
-
-
-        return email.includes("@");
-
-    }
-
-
-
-
-
-
-
-
-
-    async function salvarFornecedor(e) {
-
+    async function salvar(e){
 
         e.preventDefault();
 
 
+        if(!nome.trim()){
 
-
-        if(!validarEmail(formulario.email)){
-
-
-            alert(
-                "Digite um email válido"
-            );
-
+            setMensagem("Informe o nome do fornecedor");
 
             return;
-
 
         }
 
 
 
+        try{
 
 
+            const dados = {
 
-        const fornecedor = {
+                nome,
+                email,
+                telefone
 
-
-            nome: formulario.nome,
-
-            email: formulario.email,
-
-            telefone: formulario.telefone
-
-
-        };
-
-
-
-
-
-
-
-
-        try {
-
+            };
 
 
 
             if(editando){
 
 
-
-
-
                 await api.put(
-
-                    `/fornecedores/${idEditando}`,
-
-                    fornecedor
-
+                    `/fornecedores/${editando}`,
+                    dados
                 );
 
 
-
-                alert(
-
-                    "Fornecedor atualizado com sucesso!"
-
+                setMensagem(
+                    "Fornecedor atualizado com sucesso"
                 );
 
 
-
-
-
-            } else {
-
-
-
+            }else{
 
 
                 await api.post(
-
                     "/fornecedores",
-
-                    fornecedor
-
+                    dados
                 );
 
 
-
-                alert(
-
-                    "Fornecedor cadastrado com sucesso!"
-
+                setMensagem(
+                    "Fornecedor cadastrado com sucesso"
                 );
-
-
 
             }
 
 
 
+            limpar();
+
+            carregarFornecedores();
 
 
 
-            limparFormulario();
+        }catch(error){
 
+            console.log(error);
 
-            buscarFornecedores();
-
-
-
-
-
-
-        } catch (erro) {
-
-
-
-            console.log(
-
-                "Erro ao salvar fornecedor:",
-
-                erro
-
-            );
-
-
-
-            alert(
-
+            setMensagem(
                 "Erro ao salvar fornecedor"
-
             );
-
-
 
         }
 
@@ -252,39 +137,18 @@ function Fornecedor() {
 
 
 
+    function editar(fornecedor){
 
 
-    function editarFornecedor(fornecedor) {
+        setNome(fornecedor.nome);
 
+        setEmail(fornecedor.email);
 
+        setTelefone(fornecedor.telefone);
 
-        setEditando(true);
+        setEditando(fornecedor.id);
 
-
-
-        setIdEditando(
-
-            fornecedor.id
-
-        );
-
-
-
-        setFormulario({
-
-
-            nome: fornecedor.nome,
-
-
-            email: fornecedor.email,
-
-
-            telefone: fornecedor.telefone
-
-
-        });
-
-
+        setMensagem("");
 
     }
 
@@ -294,58 +158,12 @@ function Fornecedor() {
 
 
 
-
-
-    function limparFormulario(){
-
-
-
-        setFormulario({
-
-
-            nome: "",
-
-
-            email: "",
-
-
-            telefone: ""
-
-
-        });
-
-
-
-
-        setEditando(false);
-
-
-
-        setIdEditando(null);
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    async function excluirFornecedor(id){
-
+    async function excluir(id){
 
 
         const confirmar = window.confirm(
-
-            "Deseja realmente excluir este fornecedor?"
-
+            "Deseja excluir este fornecedor?"
         );
-
-
 
 
         if(!confirmar){
@@ -356,62 +174,30 @@ function Fornecedor() {
 
 
 
-
-
-
-
-
-        try {
-
-
+        try{
 
 
             await api.delete(
-
                 `/fornecedores/${id}`
-
             );
 
 
-
-
-            alert(
-
-                "Fornecedor excluído com sucesso!"
-
+            setMensagem(
+                "Fornecedor removido"
             );
 
 
-
-
-            buscarFornecedores();
-
+            carregarFornecedores();
 
 
 
+        }catch(error){
 
+            console.log(error);
 
-        } catch (erro) {
-
-
-
-            console.log(
-
-                "Erro ao excluir fornecedor:",
-
-                erro
-
-            );
-
-
-
-            alert(
-
+            setMensagem(
                 "Erro ao excluir fornecedor"
-
             );
-
-
 
         }
 
@@ -423,379 +209,231 @@ function Fornecedor() {
 
 
 
+    function limpar(){
+
+
+        setNome("");
+
+        setEmail("");
+
+        setTelefone("");
+
+        setEditando(null);
+
+
+    }
 
 
 
-    useEffect(()=>{
-
-
-        buscarFornecedores();
-
-
-    }, []);
 
 
 
 
 
+    return(
 
 
-
-
-    return (
-
-        <div>
-
+        <div className="pagina">
 
 
             <h1>
-
                 Fornecedores
-
             </h1>
 
 
 
+            <div className="card">
 
 
+                <form onSubmit={salvar}>
 
 
-            <h2>
+                    <input
+                        placeholder="Nome"
+                        value={nome}
+                        onChange={
+                            e=>setNome(e.target.value)
+                        }
+                    />
 
 
-                {
 
-                    editando
+                    <input
+                        placeholder="Email"
+                        value={email}
+                        onChange={
+                            e=>setEmail(e.target.value)
+                        }
+                    />
 
-                    ?
 
-                    "Editar Fornecedor"
 
-                    :
+                    <input
+                        placeholder="Telefone"
+                        value={telefone}
+                        onChange={
+                            e=>setTelefone(e.target.value)
+                        }
+                    />
 
-                    "Cadastrar Fornecedor"
 
-                }
 
 
-            </h2>
+                    <button className="btn salvar">
 
-
-
-
-
-
-
-            <form onSubmit={salvarFornecedor}>
-
-
-                <input
-
-                    type="text"
-
-                    name="nome"
-
-                    placeholder="Nome"
-
-                    value={formulario.nome}
-
-                    onChange={alterarCampo}
-
-                />
-
-
-
-
-
-                <input
-
-                    type="email"
-
-                    name="email"
-
-                    placeholder="Email"
-
-                    value={formulario.email}
-
-                    onChange={alterarCampo}
-
-                />
-
-
-
-
-
-                <input
-
-                    type="text"
-
-                    name="telefone"
-
-                    placeholder="Telefone"
-
-                    value={formulario.telefone}
-
-                    onChange={alterarCampo}
-
-                />
-
-
-
-
-
-
-
-                <button type="submit">
-
-
-                    {
-
-                        editando
-
-                        ?
-
-                        "Atualizar"
-
-                        :
-
-                        "Cadastrar"
-
-                    }
-
-
-                </button>
-
-
-
-
-
-
-
-
-                {
-
-
-                    editando &&
-
-
-                    <button
-
-                        type="button"
-
-                        onClick={limparFormulario}
-
-                    >
-
-                        Cancelar
+                        {
+                            editando
+                            ?
+                            "Atualizar"
+                            :
+                            "Cadastrar"
+                        }
 
                     </button>
 
 
-                }
-
-
-
-
-
-            </form>
-
-
-
-
-
-
-
-
-
-            <h2>
-
-                Fornecedores cadastrados
-
-            </h2>
-
-
-
-
-
-
-
-
-
-            <table border="1">
-
-
-                <thead>
-
-
-                    <tr>
-
-
-                        <th>
-
-                            ID
-
-                        </th>
-
-
-                        <th>
-
-                            Nome
-
-                        </th>
-
-
-                        <th>
-
-                            Email
-
-                        </th>
-
-
-                        <th>
-
-                            Telefone
-
-                        </th>
-
-
-                        <th>
-
-                            Ações
-
-                        </th>
-
-
-                    </tr>
-
-
-                </thead>
-
-
-
-
-
-
-
-
-                <tbody>
-
-
 
                     {
+                        editando &&
 
-
-                        fornecedores.map((fornecedor)=>(
-
-
-
-                            <tr key={fornecedor.id}>
-
-
-                                <td>
-
-                                    {fornecedor.id}
-
-                                </td>
-
-
-
-                                <td>
-
-                                    {fornecedor.nome}
-
-                                </td>
-
-
-
-
-                                <td>
-
-                                    {fornecedor.email}
-
-                                </td>
-
-
-
-
-                                <td>
-
-                                    {fornecedor.telefone}
-
-                                </td>
-
-
-
-
-
-                                <td>
-
-
-
-                                    <button
-
-                                        onClick={() =>
-                                            editarFornecedor(fornecedor)
-                                        }
-
-                                    >
-
-                                        Editar
-
-                                    </button>
-
-
-
-
-
-
-                                    <button
-
-                                        onClick={() =>
-                                            excluirFornecedor(fornecedor.id)
-                                        }
-
-                                    >
-
-                                        Excluir
-
-                                    </button>
-
-
-
-                                </td>
-
-
-
-
-                            </tr>
-
-
-
-                        ))
-
-
+                        <button
+                            type="button"
+                            className="btn cancelar"
+                            onClick={limpar}
+                        >
+                            Cancelar
+                        </button>
                     }
 
 
 
-                </tbody>
+                </form>
 
 
 
-            </table>
+                {
+                    mensagem &&
+                    <p className="mensagem">
+                        {mensagem}
+                    </p>
+                }
 
 
+            </div>
+
+
+
+
+
+            <div className="tabela-container">
+
+
+                <table>
+
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Nome</th>
+
+                            <th>Email</th>
+
+                            <th>Telefone</th>
+
+                            <th>Ações</th>
+
+                        </tr>
+
+                    </thead>
+
+
+
+
+                    <tbody>
+
+
+                        {
+                            fornecedores.map((fornecedor)=>(
+
+
+                                <tr key={fornecedor.id}>
+
+
+                                    <td>
+                                        {fornecedor.id}
+                                    </td>
+
+
+                                    <td>
+                                        {fornecedor.nome}
+                                    </td>
+
+
+                                    <td>
+                                        {fornecedor.email}
+                                    </td>
+
+
+                                    <td>
+                                        {fornecedor.telefone}
+                                    </td>
+
+
+                                    <td>
+
+
+                                        <button
+                                            className="btn editar"
+                                            onClick={
+                                                ()=>editar(fornecedor)
+                                            }
+                                        >
+                                            Editar
+                                        </button>
+
+
+
+                                        <button
+                                            className="btn excluir"
+                                            onClick={
+                                                ()=>excluir(fornecedor.id)
+                                            }
+                                        >
+                                            Excluir
+                                        </button>
+
+
+
+                                    </td>
+
+
+                                </tr>
+
+
+                            ))
+                        }
+
+
+                    </tbody>
+
+
+                </table>
+
+
+            </div>
 
 
 
         </div>
 
 
-    );
+    )
 
 
 }
-
 
 
 export default Fornecedor;

@@ -1,85 +1,114 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
+import "../styles/Produto.css";
 
 
-function Produto() {
+function Produto(){
 
 
     const [produtos, setProdutos] = useState([]);
 
+    const [categorias, setCategorias] = useState([]);
 
-    const [editando, setEditando] = useState(false);
+    const [nome, setNome] = useState("");
 
+    const [sku, setSku] = useState("");
 
-    const [idEditando, setIdEditando] = useState(null);
+    const [preco, setPreco] = useState("");
 
+    const [estoque, setEstoque] = useState("");
 
+    const [categoriaId, setCategoriaId] = useState("");
 
-    const [formulario, setFormulario] = useState({
+    const [editando, setEditando] = useState(null);
 
-        nome: "",
-        sku: "",
-        preco: "",
-        categoria_id: ""
+    const [busca, setBusca] = useState("");
 
-    });
+    const [pagina, setPagina] = useState(1);
 
+    const [total, setTotal] = useState(0);
 
-
-
-
-    async function buscarProdutos() {
-
-        try {
-
-
-            const resposta = await api.get("/produtos");
-
-
-            setProdutos(resposta.data.data || []);
+    const limite = 5;
 
 
 
-        } catch (erro) {
+    async function carregarProdutos(){
 
 
-            console.log(
-                "Erro ao buscar produtos:",
-                erro
+        try{
+
+
+            const response = await api.get(
+                `/produtos?page=${pagina}&limit=${limite}&q=${busca}`
             );
 
 
+            setProdutos(response.data.data || []);
+
+            setTotal(response.data.meta.total || 0);
+
+
+        }catch(error){
+
+            console.log(error);
+
         }
 
-    }
-
-
-
-
-
-
-    function alterarCampo(e) {
-
-
-        setFormulario({
-
-            ...formulario,
-
-            [e.target.name]: e.target.value
-
-        });
-
 
     }
 
 
 
 
+    async function carregarCategorias(){
+
+
+        try{
+
+
+            const response = await api.get("/categorias");
+
+
+            setCategorias(response.data.data || []);
+
+
+        }catch(error){
+
+            console.log(error);
+
+        }
+
+
+    }
 
 
 
 
-    async function salvarProduto(e) {
+    useEffect(()=>{
+
+
+        carregarProdutos();
+
+
+    },[pagina,busca]);
+
+
+
+
+    useEffect(()=>{
+
+
+        carregarCategorias();
+
+
+    },[]);
+
+
+
+
+
+
+    async function salvar(e){
 
 
         e.preventDefault();
@@ -89,60 +118,39 @@ function Produto() {
         const produto = {
 
 
-            nome: formulario.nome,
+            nome,
 
-            sku: formulario.sku,
+            sku,
 
-            preco: Number(formulario.preco),
+            preco: Number(preco),
 
-            categoria_id: Number(formulario.categoria_id)
+            estoque: Number(estoque),
+
+            categoria_id: Number(categoriaId)
 
 
         };
 
 
 
-
-        try {
-
+        try{
 
 
-            if (editando) {
-
+            if(editando){
 
 
                 await api.put(
-
-                    `/produtos/${idEditando}`,
-
+                    `/produtos/${editando}`,
                     produto
-
                 );
 
 
-
-                alert(
-                    "Produto atualizado com sucesso!"
-                );
-
-
-
-            } else {
-
+            }else{
 
 
                 await api.post(
-
                     "/produtos",
-
                     produto
-
-                );
-
-
-
-                alert(
-                    "Produto cadastrado com sucesso!"
                 );
 
 
@@ -150,32 +158,17 @@ function Produto() {
 
 
 
+            limpar();
+
+
+            carregarProdutos();
 
 
 
-            limparFormulario();
+        }catch(error){
 
 
-            buscarProdutos();
-
-
-
-
-        } catch (erro) {
-
-
-
-            console.log(
-                "Erro ao salvar produto:",
-                erro
-            );
-
-
-
-            alert(
-                "Erro ao salvar produto"
-            );
-
+            console.log(error);
 
 
         }
@@ -188,30 +181,20 @@ function Produto() {
 
 
 
+    function editar(produto){
 
 
+        setNome(produto.nome);
 
-    function editarProduto(produto) {
+        setSku(produto.sku);
 
+        setPreco(produto.preco);
 
-        setEditando(true);
+        setEstoque(produto.estoque);
 
+        setCategoriaId(produto.categoria_id);
 
-        setIdEditando(produto.id);
-
-
-
-        setFormulario({
-
-            nome: produto.nome,
-
-            sku: produto.sku,
-
-            preco: produto.preco,
-
-            categoria_id: produto.categoria_id
-
-        });
+        setEditando(produto.id);
 
 
     }
@@ -221,96 +204,34 @@ function Produto() {
 
 
 
-
-
-    function limparFormulario() {
-
-
-        setFormulario({
-
-            nome: "",
-
-            sku: "",
-
-            preco: "",
-
-            categoria_id: ""
-
-        });
-
-
-
-        setEditando(false);
-
-
-        setIdEditando(null);
-
-
-    }
-
-
-
-
-
-
-
-
-
-    async function excluirProduto(id) {
+    async function excluir(id){
 
 
         const confirmar = window.confirm(
-            "Deseja realmente excluir este produto?"
+            "Deseja excluir este produto?"
         );
 
 
-
-        if (!confirmar) {
-
+        if(!confirmar)
             return;
 
-        }
 
 
-
-
-
-
-        try {
+        try{
 
 
             await api.delete(
-
                 `/produtos/${id}`
-
             );
 
 
-
-            alert(
-                "Produto excluído com sucesso!"
-            );
+            carregarProdutos();
 
 
-
-            buscarProdutos();
-
+        }catch(error){
 
 
-
-        } catch (erro) {
-
-
-            console.log(
-                "Erro ao excluir produto:",
-                erro
-            );
-
-
-
-            alert(
-                "Erro ao excluir produto"
-            );
+            console.log(error);
 
 
         }
@@ -324,14 +245,23 @@ function Produto() {
 
 
 
-
-    useEffect(() => {
-
-
-        buscarProdutos();
+    function limpar(){
 
 
-    }, []);
+        setNome("");
+
+        setSku("");
+
+        setPreco("");
+
+        setEstoque("");
+
+        setCategoriaId("");
+
+        setEditando(null);
+
+
+    }
 
 
 
@@ -339,178 +269,166 @@ function Produto() {
 
 
 
+    return(
 
 
-    return (
-
-        <div>
+        <div className="pagina">
 
 
             <h1>
-
                 Produtos
-
             </h1>
 
 
 
+            <input
 
+                className="busca"
 
-            <h2>
+                placeholder="Buscar produto..."
 
-                {
-                    editando
-                    ?
-                    "Editar Produto"
-                    :
-                    "Cadastrar Produto"
-                }
+                value={busca}
 
-            </h2>
+                onChange={(e)=>{
 
+                    setPagina(1);
 
+                    setBusca(e.target.value);
 
+                }}
 
+            />
 
 
-            <form onSubmit={salvarProduto}>
 
 
-                <input
+            <div className="card">
 
-                    type="text"
 
-                    name="nome"
+                <form onSubmit={salvar}>
 
-                    placeholder="Nome"
 
-                    value={formulario.nome}
+                    <input
 
-                    onChange={alterarCampo}
+                        placeholder="Nome"
 
-                />
+                        value={nome}
 
+                        onChange={
+                            e=>setNome(e.target.value)
+                        }
 
+                    />
 
 
-                <input
 
-                    type="text"
+                    <input
 
-                    name="sku"
+                        placeholder="SKU"
 
-                    placeholder="SKU"
+                        value={sku}
 
-                    value={formulario.sku}
+                        onChange={
+                            e=>setSku(e.target.value)
+                        }
 
-                    onChange={alterarCampo}
+                    />
 
-                />
 
 
+                    <input
 
+                        type="number"
 
-                <input
+                        placeholder="Preço"
 
-                    type="number"
+                        value={preco}
 
-                    name="preco"
+                        onChange={
+                            e=>setPreco(e.target.value)
+                        }
 
-                    placeholder="Preço"
+                    />
 
-                    value={formulario.preco}
 
-                    onChange={alterarCampo}
 
-                />
+                    <input
 
+                        type="number"
 
+                        placeholder="Estoque"
 
+                        value={estoque}
 
-                <input
+                        onChange={
+                            e=>setEstoque(e.target.value)
+                        }
 
-                    type="number"
+                    />
 
-                    name="categoria_id"
 
-                    placeholder="Categoria ID"
 
-                    value={formulario.categoria_id}
+                    <select
 
-                    onChange={alterarCampo}
+                        value={categoriaId}
 
-                />
-
-
-
-
-
-
-                <button type="submit">
-
-
-                    {
-                        editando
-                        ?
-                        "Atualizar"
-                        :
-                        "Cadastrar"
-                    }
-
-
-                </button>
-
-
-
-
-
-                {
-
-                    editando &&
-
-                    <button
-
-                        type="button"
-
-                        onClick={limparFormulario}
+                        onChange={
+                            e=>setCategoriaId(e.target.value)
+                        }
 
                     >
 
-                        Cancelar
+                        <option value="">
+                            Selecione categoria
+                        </option>
+
+
+                        {
+                            categorias.map(c=>(
+
+                                <option 
+                                    key={c.id}
+                                    value={c.id}
+                                >
+
+                                    {c.nome}
+
+                                </option>
+
+                            ))
+                        }
+
+
+                    </select>
+
+
+
+                    <button className="btn salvar">
+
+                        {
+                            editando
+                            ?
+                            "Atualizar"
+                            :
+                            "Cadastrar"
+                        }
 
                     </button>
 
 
-                }
+                </form>
 
 
-
-            </form>
-
-
-
+            </div>
 
 
 
 
 
-
-            <h2>
-
-                Produtos cadastrados
-
-            </h2>
-
-
-
-
-
-
-            <table border="1">
+            <table>
 
 
                 <thead>
-
 
                     <tr>
 
@@ -522,88 +440,58 @@ function Produto() {
 
                         <th>Preço</th>
 
-                        <th>Categoria</th>
+                        <th>Estoque</th>
 
                         <th>Ações</th>
 
-
                     </tr>
 
-
                 </thead>
-
-
-
 
 
                 <tbody>
 
 
                     {
-
-
-                        produtos.map((produto)=>(
-
+                        produtos.map(produto=>(
 
 
                             <tr key={produto.id}>
 
 
                                 <td>
-
                                     {produto.id}
-
                                 </td>
 
 
-
-
                                 <td>
-
                                     {produto.nome}
-
                                 </td>
 
 
-
-
                                 <td>
-
                                     {produto.sku}
-
                                 </td>
 
 
-
-
                                 <td>
-
                                     R$ {produto.preco}
-
                                 </td>
-
-
 
 
                                 <td>
-
-                                    {produto.categoria_id}
-
+                                    {produto.estoque}
                                 </td>
-
-
-
 
 
                                 <td>
 
 
                                     <button
-
-                                        onClick={() =>
-                                            editarProduto(produto)
+                                        className="btn editar"
+                                        onClick={()=>
+                                            editar(produto)
                                         }
-
                                     >
 
                                         Editar
@@ -611,15 +499,11 @@ function Produto() {
                                     </button>
 
 
-
-
-
                                     <button
-
-                                        onClick={() =>
-                                            excluirProduto(produto.id)
+                                        className="btn excluir"
+                                        onClick={()=>
+                                            excluir(produto.id)
                                         }
-
                                     >
 
                                         Excluir
@@ -627,19 +511,13 @@ function Produto() {
                                     </button>
 
 
-
                                 </td>
-
-
 
 
                             </tr>
 
 
-
                         ))
-
-
                     }
 
 
@@ -651,14 +529,63 @@ function Produto() {
 
 
 
+            <div className="paginacao">
+
+
+                <button
+
+                    disabled={pagina===1}
+
+                    onClick={()=>
+                        setPagina(pagina-1)
+                    }
+
+                >
+
+                    Anterior
+
+                </button>
+
+
+
+                <span>
+
+                    Página {pagina}
+
+                </span>
+
+
+
+
+                <button
+
+                    disabled={
+                        pagina >= Math.ceil(total/limite)
+                    }
+
+                    onClick={()=>
+                        setPagina(pagina+1)
+                    }
+
+                >
+
+                    Próxima
+
+                </button>
+
+
+
+            </div>
+
+
+
         </div>
 
 
-    );
+    )
 
 
 }
-
 
 
 export default Produto;
