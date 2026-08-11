@@ -1,13 +1,16 @@
-FROM node:22
+FROM golang:1.25
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY go.mod .
+COPY go.sum .
 
-RUN npm install
+RUN go mod download
 
 COPY . .
 
-EXPOSE 5173
+RUN go build -o main .
 
-CMD ["npm", "run", "dev", "--", "--host"]
+EXPOSE 8080
+
+CMD ["./main"]
