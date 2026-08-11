@@ -1,0 +1,117 @@
+.pagina {
+
+    padding: 30px;
+
+}
+
+
+.card {
+
+    background: white;
+
+    padding: 25px;
+
+    border-radius: 10px;
+
+    margin-bottom: 25px;
+
+}
+
+
+form {
+
+    display: flex;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+
+}
+
+
+input {
+
+    padding: 10px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 6px;
+
+}
+
+
+button {
+
+    cursor: pointer;
+
+}
+
+
+.btn {
+
+    padding: 10px 15px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    color: white;
+
+}
+
+
+.salvar {
+
+    background: #2563eb;
+
+}
+
+
+.editar {
+
+    background: #16a34a;
+
+    margin-right: 10px;
+
+}
+
+
+.excluir {
+
+    background: #dc2626;
+
+}
+
+
+
+table {
+
+    width: 100%;
+
+    background: white;
+
+    border-collapse: collapse;
+
+}
+
+
+
+th {
+
+    background: #1f2937;
+
+    color: white;
+
+    padding: 12px;
+
+}
+
+
+
+td {
+
+    padding: 12px;
+
+    text-align: center;
+
+}
