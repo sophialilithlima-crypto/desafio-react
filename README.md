@@ -1,222 +1,77 @@
-# Desafio Técnico — CRUD Full-Stack Nível 3
+# Desafio React 3 — CRUD Full Stack
 
-Aplicação full-stack de cadastro de produtos, categorias e fornecedores, desenvolvida com Go, React e PostgreSQL.
+Aplicação web full stack desenvolvida como parte do Desafio React 3, utilizando **React**, **Go**, **Gin**, **PostgreSQL** e **Docker**.
 
-O projeto contempla os requisitos dos níveis anteriores e adiciona os recursos do **Nível 3 — Bônus**: relacionamento N:N entre produtos e fornecedores, autenticação simples, CI, deploy/preview e logs estruturados.
+O projeto permite realizar o gerenciamento de **categorias, fornecedores e produtos**, com operações de criação, consulta, atualização e exclusão.
 
 ---
 
-## Tecnologias
-
-### Backend
-
-* Go 1.22+
-* Gin
-* PostgreSQL
-* JWT
-* `log/slog`
-* Repository Pattern
-* Arquitetura Controller → Service → Repository
+## Tecnologias utilizadas
 
 ### Frontend
 
-* React 18+
+* React
 * Vite
 * JavaScript
-* React Router
-* Axios
+* HTML5
+* CSS3
+* Node.js
+* npm
 
-### Banco de dados
+### Backend
 
-* PostgreSQL 14+
+* Go
+* Gin
+* PostgreSQL
+* API REST
 
 ### Infraestrutura
 
 * Docker
 * Docker Compose
-* GitHub Actions
-* Render
 
 ---
 
 ## Funcionalidades
 
-### Categoria
-
-* Criar categoria
-* Listar categorias
-* Consultar categoria por ID
-* Editar categoria
-* Excluir categoria
-* Buscar por nome
-* Paginação
-* Validação
-* Nome único
-* Bloqueio da exclusão quando existem produtos vinculados
-
-### Fornecedor
-
-* Criar fornecedor
-* Listar fornecedores
-* Consultar fornecedor por ID
-* Editar fornecedor
-* Excluir fornecedor
-* Buscar por nome
-* Paginação
-* Validação
-* Validação de e-mail
-
-### Produto
-
-* Criar produto
-* Listar produtos
-* Consultar produto por ID
-* Editar produto
-* Excluir produto
-* Buscar por nome
-* Paginação
-* SKU único
-* Validação de preço
-* Validação de estoque
-* Relação com categoria
-* Relação com múltiplos fornecedores
-
----
-
-## Relacionamentos
-
-### Categoria → Produto
-
-A relação entre categoria e produto é **1:N**.
-
-```text
-Categoria 1 ───── N Produto
-```
-
-Um produto pertence a uma categoria e uma categoria pode possuir vários produtos.
-
-A exclusão de uma categoria que possui produtos vinculados é bloqueada.
-
-### Produto ↔ Fornecedor
-
-A relação entre produto e fornecedor é **N:N**.
-
-```text
-Produto N ───── N Fornecedor
-       \         /
-        \       /
-     produto_fornecedor
-```
-
-A relação é armazenada na tabela:
-
-```text
-produto_fornecedor
-├── produto_id
-└── fornecedor_id
-```
-
-A chave primária é composta pelos dois IDs.
-
----
-
-## Autenticação
-
-O sistema possui autenticação simples utilizando JWT.
-
-### Login
-
-```http
-POST /auth/login
-Content-Type: application/json
-```
-
-Exemplo:
-
-```json
-{
-  "usuario": "admin",
-  "senha": "admin123"
-}
-```
-
-Após o login, a API retorna um token JWT.
-
-As rotas protegidas utilizam:
-
-```http
-Authorization: Bearer SEU_TOKEN
-```
-
-As credenciais devem ser configuradas através das variáveis de ambiente.
-
----
-
-## API
-
-### Autenticação
-
-| Método | Endpoint      |
-| ------ | ------------- |
-| POST   | `/auth/login` |
-
 ### Categorias
 
-| Método | Endpoint              |
-| ------ | --------------------- |
-| GET    | `/api/categorias`     |
-| POST   | `/api/categorias`     |
-| GET    | `/api/categorias/:id` |
-| PUT    | `/api/categorias/:id` |
-| DELETE | `/api/categorias/:id` |
+* Listar categorias
+* Buscar categoria por ID
+* Cadastrar categoria
+* Atualizar categoria
+* Excluir categoria
+* Validação dos dados
 
 ### Fornecedores
 
-| Método | Endpoint                |
-| ------ | ----------------------- |
-| GET    | `/api/fornecedores`     |
-| POST   | `/api/fornecedores`     |
-| GET    | `/api/fornecedores/:id` |
-| PUT    | `/api/fornecedores/:id` |
-| DELETE | `/api/fornecedores/:id` |
+* Listar fornecedores
+* Buscar fornecedor por ID
+* Cadastrar fornecedor
+* Atualizar fornecedor
+* Excluir fornecedor
+* Validação dos dados
 
 ### Produtos
 
-| Método | Endpoint            |
-| ------ | ------------------- |
-| GET    | `/api/produtos`     |
-| POST   | `/api/produtos`     |
-| GET    | `/api/produtos/:id` |
-| PUT    | `/api/produtos/:id` |
-| DELETE | `/api/produtos/:id` |
+* Listar produtos
+* Buscar produto por ID
+* Cadastrar produto
+* Atualizar produto
+* Excluir produto
+* Validação dos dados
+* Associação com categoria
+* Controle de preço e estoque
 
-O padrão REST utilizado segue o contrato definido no desafio.
+### Outros recursos
 
----
-
-## Paginação e busca
-
-As listagens possuem paginação e busca.
-
-Exemplo:
-
-```http
-GET /api/produtos?page=1&limit=20&q=notebook
-```
-
-A resposta utiliza um envelope consistente:
-
-```json
-{
-  "data": [],
-  "error": null,
-  "meta": {
-    "total": 0,
-    "page": 1,
-    "limit": 20
-  }
-}
-```
+* Paginação
+* Busca
+* Validações no backend
+* Respostas padronizadas da API
+* Persistência dos dados em PostgreSQL
+* Testes automatizados no backend
+* Configuração para execução com Docker Compose
 
 ---
 
@@ -225,357 +80,282 @@ A resposta utiliza um envelope consistente:
 ```text
 desafio-react3/
 │
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-│
 ├── backend/
 │   ├── cmd/
 │   ├── config/
 │   ├── controllers/
-│   ├── middleware/
-│   ├── migrations/
 │   ├── models/
 │   ├── repositories/
 │   ├── services/
 │   ├── utils/
 │   ├── Dockerfile
 │   ├── go.mod
-│   └── go.sum
-│
-├── database/
-│   ├── database.sql
-│   └── migration_n3.sql
+│   ├── go.sum
+│   └── ...
 │
 ├── frontend/
-│   ├── public/
 │   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   └── ...
+│   ├── public/
 │   ├── Dockerfile
 │   ├── package.json
-│   └── vite.config.js
+│   └── ...
 │
-├── .env.example
+├── database/
+│   └── ...
+│
 ├── docker-compose.yml
-├── render.yaml
 └── README.md
 ```
 
 ---
 
-## Arquitetura
+## Requisitos
 
-O backend utiliza três camadas principais:
+Para executar o projeto utilizando Docker, é necessário ter instalado:
 
-```text
-Controller
-    ↓
-Service
-    ↓
-Repository
-    ↓
-PostgreSQL
-```
+* Docker
+* Docker Compose
 
-### Controller
-
-Responsável pelo recebimento das requisições HTTP e retorno das respostas.
-
-### Service
-
-Responsável pelas regras de negócio e validações.
-
-### Repository
-
-Responsável pelo acesso ao banco de dados.
-
-As queries utilizam parâmetros, evitando concatenação direta de valores no SQL. Essa separação segue os requisitos técnicos do desafio.
+O Docker Desktop já inclui o Docker Compose nas versões atuais.
 
 ---
 
-## Logs estruturados
+## Como executar o projeto
 
-O backend utiliza `log/slog` para gerar logs estruturados em JSON.
+### 1. Clone o repositório
 
-Exemplo:
-
-```json
-{
-  "level": "INFO",
-  "msg": "http_request",
-  "method": "GET",
-  "path": "/api/produtos",
-  "status": 200,
-  "duration_ms": 12
-}
+```bash
+git clone <URL_DO_REPOSITORIO>
 ```
 
-O objetivo é facilitar a leitura e o processamento dos logs em ambientes de execução.
+Entre na pasta do projeto:
+
+```bash
+cd desafio-react3
+```
 
 ---
 
-## Variáveis de ambiente
-
-Utilize o arquivo `.env.example` como referência.
-
-Exemplo:
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=desafio-react2
-
-PORT=8080
-
-JWT_SECRET=change-this-secret
-
-AUTH_USER=admin
-AUTH_PASSWORD=admin123
-
-FRONTEND_URL=http://localhost:5173
-```
-
-**Não coloque senhas ou secrets reais no GitHub.**
-
----
-
-## Executando com Docker
-
-Com o Docker Desktop instalado e aberto, entre na pasta do projeto:
-
-```powershell
-cd C:\Users\Sophia\Documents\GitHub\desafio-react3
-```
+### 2. Inicie os containers
 
 Execute:
 
-```powershell
+```bash
 docker compose up --build
 ```
 
-O Docker Compose sobe os serviços necessários:
+O Docker irá:
 
-```text
-PostgreSQL
-    ↓
-Backend Go
-    ↓
-Frontend React
-```
+1. Construir a imagem do frontend.
+2. Construir a imagem do backend.
+3. Criar o container do PostgreSQL.
+4. Criar a rede da aplicação.
+5. Criar o volume de persistência do banco.
+6. Iniciar o backend.
+7. Iniciar o frontend.
 
-O desafio define como requisito que o `docker-compose.yml` seja capaz de subir PostgreSQL, API e Front com um comando.
+Na primeira execução, o PostgreSQL pode levar alguns segundos para inicializar. O backend possui reinício automático caso tente se conectar antes de o banco estar pronto.
 
-### Frontend
+---
+
+## Acessando a aplicação
+
+Depois que os containers estiverem em execução, acesse:
+
+**Frontend**
 
 ```text
 http://localhost:5173
 ```
 
-### Backend
+**Backend**
 
 ```text
 http://localhost:8080
 ```
 
-Para parar os containers:
+A aplicação frontend utiliza a API disponibilizada pelo backend para realizar as operações no banco de dados.
 
-```powershell
-docker compose down
+---
+
+## API
+
+O backend disponibiliza endpoints para as principais entidades da aplicação.
+
+### Categorias
+
+```text
+GET    /categorias
+POST   /categorias
+PUT    /categorias/:id
+DELETE /categorias/:id
+GET    /categoria/:id
 ```
 
-Para remover também os volumes:
+### Fornecedores
 
-```powershell
-docker compose down -v
+```text
+GET    /fornecedores
+POST   /fornecedores
+PUT    /fornecedores/:id
+DELETE /fornecedores/:id
+GET    /fornecedor/:id
+```
+
+### Produtos
+
+```text
+GET    /produtos
+POST   /produtos
+PUT    /produtos/:id
+DELETE /produtos/:id
+GET    /produto/:id
 ```
 
 ---
 
-## Executando sem Docker
+## Paginação e busca
 
-### Backend
+Os endpoints de listagem possuem suporte a paginação e busca.
 
-```powershell
-cd backend
-go mod tidy
-go run ./cmd
+Exemplo:
+
+```text
+GET /produtos?page=1&limit=10&q=notebook
 ```
 
-### Frontend
+Onde:
 
-Em outro terminal:
-
-```powershell
-cd frontend
-npm install
-npm run dev
-```
+* `page` representa a página atual.
+* `limit` representa a quantidade de registros por página.
+* `q` representa o termo de busca.
 
 ---
 
 ## Banco de dados
 
-O schema principal está localizado em:
+O projeto utiliza **PostgreSQL**.
+
+O banco é executado através de um container Docker e seus dados são armazenados em um volume:
 
 ```text
-database/database.sql
+postgres_data
 ```
 
-A alteração referente ao relacionamento N:N está em:
+Isso permite que os dados continuem disponíveis mesmo após a parada dos containers.
 
-```text
-database/migration_n3.sql
-```
-
-A relação entre produto e fornecedor utiliza a tabela:
-
-```text
-produto_fornecedor
-```
+As configurações de conexão são definidas através de variáveis de ambiente utilizadas pelo backend.
 
 ---
 
 ## Testes
 
-Para executar os testes do backend:
+Os testes do backend podem ser executados dentro da pasta `backend` com:
 
-```powershell
-cd backend
+```bash
 go test ./...
 ```
 
-Os testes devem cobrir principalmente regras de negócio dos services e endpoints relevantes.
-
-O desafio prioriza testes relevantes em vez de exigir cobertura de 100%.
+O comando executa os testes disponíveis nos diferentes pacotes do backend.
 
 ---
 
-## CI
+## Parando a aplicação
 
-O projeto possui GitHub Actions configurado em:
+Para parar os containers:
 
-```text
-.github/workflows/ci.yml
+```bash
+docker compose down
 ```
 
-O pipeline executa verificações do backend e frontend.
+Para parar os containers e também remover os volumes:
 
-Backend:
-
-```text
-go mod download
-go test ./...
+```bash
+docker compose down -v
 ```
 
-Frontend:
+> **Atenção:** o segundo comando remove o volume do PostgreSQL e, consequentemente, os dados armazenados nele.
 
-```text
-npm ci
-npm run build
+---
+
+## Verificando os containers
+
+Para verificar os containers em execução:
+
+```bash
+docker compose ps
 ```
 
-O CI permite verificar automaticamente o projeto a cada alteração enviada ao GitHub.
+Para visualizar os logs:
 
----
-
-## Deploy / Preview
-
-O projeto possui configuração de deploy em:
-
-```text
-render.yaml
+```bash
+docker compose logs
 ```
 
-A configuração foi preparada para permitir o deploy da aplicação utilizando:
+Para visualizar os logs de um serviço específico:
 
-* Backend Go
-* Frontend React
-* PostgreSQL
+```bash
+docker compose logs backend
+```
 
-As variáveis sensíveis devem ser configuradas diretamente no ambiente de deploy.
+ou:
 
----
+```bash
+docker compose logs frontend
+```
 
-## Decisões de arquitetura
+ou:
 
-### Go + Gin
-
-Gin foi utilizado como framework HTTP por ser leve e adequado para a construção da API REST.
-
-### Repository Pattern
-
-O Repository Pattern separa o acesso ao banco das regras de negócio e facilita a realização de testes.
-
-### PostgreSQL
-
-PostgreSQL foi escolhido para garantir persistência real e suportar as relações entre as entidades.
-
-### JWT
-
-JWT foi utilizado para implementar uma autenticação simples, conforme o escopo do Nível 3.
-
-### React + Vite
-
-React e Vite foram utilizados para a construção da SPA.
-
-### Docker Compose
-
-Docker Compose permite executar os serviços da aplicação de maneira padronizada.
+```bash
+docker compose logs postgres
+```
 
 ---
 
-## Trade-offs
+## Execução validada
 
-O projeto prioriza simplicidade e atendimento ao escopo do desafio.
+A aplicação foi executada e testada utilizando:
 
-A autenticação implementada é simples e não possui um sistema completo de usuários, permissões ou refresh tokens.
+```bash
+docker compose up --build
+```
 
-O sistema também não implementa uma plataforma completa de observabilidade, utilizando logs estruturados como mecanismo de observabilidade previsto no Nível 3.
+Durante a inicialização, foram criados e executados:
 
----
+* Container do PostgreSQL
+* Container do backend
+* Container do frontend
+* Rede Docker da aplicação
+* Volume para persistência do PostgreSQL
 
-## O que ficou de fora
+Após a inicialização do PostgreSQL, o backend realizou a conexão com o banco com sucesso e iniciou o servidor na porta `8080`.
 
-Não foram adicionadas funcionalidades que não fazem parte do escopo definido para o desafio.
+O frontend foi iniciado pelo Vite na porta `5173`.
 
-Possíveis evoluções futuras seriam:
-
-* gerenciamento completo de usuários;
-* diferentes níveis de permissão;
-* refresh tokens;
-* documentação Swagger/OpenAPI;
-* maior cobertura de testes;
-* monitoramento externo;
-* pipeline de deploy mais avançado.
+As funcionalidades da aplicação foram testadas após a inicialização dos containers.
 
 ---
 
-## Entregáveis
+## Status do projeto
 
-O projeto contém:
+**Projeto concluído.**
 
-* Repositório Git;
-* CRUD das três entidades;
-* Relação 1:N Categoria → Produto;
-* Relação N:N Produto ↔ Fornecedor;
-* Validações;
-* Paginação;
-* Busca;
-* Autenticação;
-* Logs estruturados;
-* Testes;
-* Docker Compose;
-* GitHub Actions;
-* Configuração de deploy;
-* README.
+* [x] Frontend React
+* [x] Backend Go/Gin
+* [x] PostgreSQL
+* [x] CRUD de categorias
+* [x] CRUD de fornecedores
+* [x] CRUD de produtos
+* [x] Validações
+* [x] Paginação
+* [x] Busca
+* [x] Testes
+* [x] Docker
+* [x] Docker Compose
+* [x] Integração frontend/backend
+* [x] Persistência do banco de dados
+* [x] Testes da aplicação em ambiente Docker
 
-Esses elementos correspondem aos requisitos definidos para os níveis do desafio.
-
----
-
-## Desenvolvedora
-
-**Sophia Lilith**
-
-Projeto desenvolvido como desafio técnico Full-Stack utilizando Go, React e PostgreSQL.
