@@ -20,13 +20,15 @@ func (r *CategoriaRepository) GetAll(page int, limit int, busca string) ([]model
 
 	var total int
 
+	buscaParam := "%" + busca + "%"
+
 	err := config.DB.QueryRow(
 		`
 		SELECT COUNT(*)
 		FROM categoria
 		WHERE nome ILIKE $1
 		`,
-		"%"+busca+"%",
+		buscaParam,
 	).Scan(&total)
 
 	if err != nil {
