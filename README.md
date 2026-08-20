@@ -17,6 +17,8 @@ O projeto permite realizar o gerenciamento de **categorias, fornecedores e produ
 * CSS3
 * Node.js
 * npm
+* Axios
+* React Router
 
 ### Backend
 
@@ -42,6 +44,7 @@ O projeto permite realizar o gerenciamento de **categorias, fornecedores e produ
 * Atualizar categoria
 * Excluir categoria
 * Validação dos dados
+* Impede exclusão de categoria que possua produtos vinculados
 
 ### Fornecedores
 
@@ -51,6 +54,7 @@ O projeto permite realizar o gerenciamento de **categorias, fornecedores e produ
 * Atualizar fornecedor
 * Excluir fornecedor
 * Validação dos dados
+* Validação do formato do e-mail
 
 ### Produtos
 
@@ -62,16 +66,18 @@ O projeto permite realizar o gerenciamento de **categorias, fornecedores e produ
 * Validação dos dados
 * Associação com categoria
 * Controle de preço e estoque
+* Validação de SKU único
 
 ### Outros recursos
 
 * Paginação
-* Busca
+* Busca por nome
 * Validações no backend
 * Respostas padronizadas da API
 * Persistência dos dados em PostgreSQL
 * Testes automatizados no backend
 * Configuração para execução com Docker Compose
+* Integração entre frontend e backend
 
 ---
 
@@ -82,6 +88,7 @@ desafio-react3/
 │
 ├── backend/
 │   ├── cmd/
+│   │   └── main.go
 │   ├── config/
 │   ├── controllers/
 │   ├── models/
@@ -95,16 +102,16 @@ desafio-react3/
 │
 ├── frontend/
 │   ├── src/
+│   │   ├── api/
 │   │   ├── components/
 │   │   ├── pages/
-│   │   └── ...
-│   ├── public/
+│   │   └── styles/
 │   ├── Dockerfile
 │   ├── package.json
 │   └── ...
 │
 ├── database/
-│   └── ...
+│   └── database.sql
 │
 ├── docker-compose.yml
 └── README.md
@@ -157,7 +164,15 @@ O Docker irá:
 6. Iniciar o backend.
 7. Iniciar o frontend.
 
-Na primeira execução, o PostgreSQL pode levar alguns segundos para inicializar. O backend possui reinício automático caso tente se conectar antes de o banco estar pronto.
+Na primeira execução, o PostgreSQL pode levar alguns segundos para inicializar. O backend possui política de reinício automático caso seja iniciado antes de o banco estar disponível.
+
+> **Observação:** o arquivo `database/database.sql` contém a estrutura das tabelas, mas não é executado automaticamente pelo `docker-compose.yml`. Em uma instalação limpa, o script deve ser executado no banco antes de utilizar as funcionalidades que dependem das tabelas.
+
+Exemplo no PowerShell:
+
+```powershell
+Get-Content .\database\database.sql | docker exec -i postgres psql -U postgres -d desafio-react2
+```
 
 ---
 
@@ -185,6 +200,8 @@ A aplicação frontend utiliza a API disponibilizada pelo backend para realizar 
 
 O backend disponibiliza endpoints para as principais entidades da aplicação.
 
+O frontend utiliza as rotas no formato plural. O backend também possui rotas de CRUD no singular como alternativa.
+
 ### Categorias
 
 ```text
@@ -193,6 +210,15 @@ POST   /categorias
 PUT    /categorias/:id
 DELETE /categorias/:id
 GET    /categoria/:id
+```
+
+Também estão disponíveis as rotas de listagem e CRUD no formato singular:
+
+```text
+GET    /categoria
+POST   /categoria
+PUT    /categoria/:id
+DELETE /categoria/:id
 ```
 
 ### Fornecedores
@@ -205,6 +231,15 @@ DELETE /fornecedores/:id
 GET    /fornecedor/:id
 ```
 
+Também estão disponíveis as rotas de listagem e CRUD no formato singular:
+
+```text
+GET    /fornecedor
+POST   /fornecedor
+PUT    /fornecedor/:id
+DELETE /fornecedor/:id
+```
+
 ### Produtos
 
 ```text
@@ -215,11 +250,105 @@ DELETE /produtos/:id
 GET    /produto/:id
 ```
 
+Também estão disponíveis as rotas de listagem e CRUD no formato singular:
+
+```text
+GET    /produto
+POST   /produto
+PUT    /produto/:id
+DELETE /produto/:id
+```
+
+---
+
+## Exemplos de utilização da API
+
+### Cadastrar uma categoria
+
+Requisição:
+
+```http
+POST /categorias
+Content-Type: application/json
+```
+
+```json
+{
+  "nome": "Eletrônicos"
+}
+```
+
+Exemplo de resposta:
+
+```json
+{
+  "data": {
+    "id": 1,
+    "nome": "Eletrônicos"
+  },
+  "error": null,
+  "meta": null
+}
+```
+
+### Cadastrar um fornecedor
+
+Requisição:
+
+```http
+POST /fornecedores
+Content-Type: application/json
+```
+
+```json
+{
+  "nome": "Fornecedor Exemplo",
+  "email": "fornecedor@email.com",
+  "telefone": "81999999999"
+}
+```
+
+### Cadastrar um produto
+
+Requisição:
+
+```http
+POST /produtos
+Content-Type: application/json
+```
+
+```json
+{
+  "nome": "Notebook",
+  "sku": "NOTE123",
+  "preco": 2500,
+  "estoque": 10,
+  "categoria_id": 1
+}
+```
+
+Exemplo de resposta:
+
+```json
+{
+  "data": {
+    "id": 1,
+    "nome": "Notebook",
+    "sku": "NOTE123",
+    "preco": 2500,
+    "estoque": 10,
+    "categoria_id": 1
+  },
+  "error": null,
+  "meta": null
+}
+```
+
 ---
 
 ## Paginação e busca
 
-Os endpoints de listagem possuem suporte a paginação e busca.
+Os endpoints de listagem possuem suporte a paginação e busca por nome.
 
 Exemplo:
 
@@ -232,6 +361,31 @@ Onde:
 * `page` representa a página atual.
 * `limit` representa a quantidade de registros por página.
 * `q` representa o termo de busca.
+
+Exemplo de resposta:
+
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "nome": "Notebook",
+      "sku": "NOTE123",
+      "preco": 2500,
+      "estoque": 10,
+      "categoria_id": 1
+    }
+  ],
+  "error": null,
+  "meta": {
+    "total": 1,
+    "page": 1,
+    "limit": 10
+  }
+}
+```
+
+No frontend, a listagem de produtos utiliza inicialmente `5` registros por página e permite realizar a busca pelo nome do produto.
 
 ---
 
@@ -247,7 +401,25 @@ postgres_data
 
 Isso permite que os dados continuem disponíveis mesmo após a parada dos containers.
 
-As configurações de conexão são definidas através de variáveis de ambiente utilizadas pelo backend.
+O banco possui as tabelas:
+
+* `categoria`
+* `fornecedor`
+* `produto`
+
+A tabela `produto` possui relacionamento com `categoria`.
+
+A categoria não pode ser excluída enquanto houver produtos vinculados a ela.
+
+As configurações de conexão são definidas através de variáveis de ambiente utilizadas pelo backend:
+
+```text
+DB_HOST
+DB_PORT
+DB_USER
+DB_PASSWORD
+DB_NAME
+```
 
 ---
 
@@ -260,6 +432,8 @@ go test ./...
 ```
 
 O comando executa os testes disponíveis nos diferentes pacotes do backend.
+
+Os testes incluem validações dos serviços e testes do controller de categorias.
 
 ---
 
@@ -358,4 +532,3 @@ As funcionalidades da aplicação foram testadas após a inicialização dos con
 * [x] Integração frontend/backend
 * [x] Persistência do banco de dados
 * [x] Testes da aplicação em ambiente Docker
-
