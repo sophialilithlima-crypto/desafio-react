@@ -83,7 +83,7 @@ O projeto permite realizar o gerenciamento de **categorias, fornecedores e produ
 
 ## Estrutura do projeto
 
-```text
+~~~text
 desafio-react3/
 │
 ├── backend/
@@ -115,7 +115,7 @@ desafio-react3/
 │
 ├── docker-compose.yml
 └── README.md
-```
+~~~
 
 ---
 
@@ -134,15 +134,15 @@ O Docker Desktop já inclui o Docker Compose nas versões atuais.
 
 ### 1. Clone o repositório
 
-```bash
+~~~bash
 git clone <URL_DO_REPOSITORIO>
-```
+~~~
 
 Entre na pasta do projeto:
 
-```bash
+~~~bash
 cd desafio-react3
-```
+~~~
 
 ---
 
@@ -150,9 +150,9 @@ cd desafio-react3
 
 Execute:
 
-```bash
+~~~bash
 docker compose up --build
-```
+~~~
 
 O Docker irá:
 
@@ -170,9 +170,9 @@ Na primeira execução, o PostgreSQL pode levar alguns segundos para inicializar
 
 Exemplo no PowerShell:
 
-```powershell
+~~~powershell
 Get-Content .\database\database.sql | docker exec -i postgres psql -U postgres -d desafio-react2
-```
+~~~
 
 ---
 
@@ -182,15 +182,15 @@ Depois que os containers estiverem em execução, acesse:
 
 **Frontend**
 
-```text
+~~~text
 http://localhost:5173
-```
+~~~
 
 **Backend**
 
-```text
+~~~text
 http://localhost:8080
-```
+~~~
 
 A aplicação frontend utiliza a API disponibilizada pelo backend para realizar as operações no banco de dados.
 
@@ -204,60 +204,60 @@ O frontend utiliza as rotas no formato plural. O backend também possui rotas de
 
 ### Categorias
 
-```text
+~~~text
 GET    /categorias
 POST   /categorias
 PUT    /categorias/:id
 DELETE /categorias/:id
 GET    /categoria/:id
-```
+~~~
 
 Também estão disponíveis as rotas de listagem e CRUD no formato singular:
 
-```text
+~~~text
 GET    /categoria
 POST   /categoria
 PUT    /categoria/:id
 DELETE /categoria/:id
-```
+~~~
 
 ### Fornecedores
 
-```text
+~~~text
 GET    /fornecedores
 POST   /fornecedores
 PUT    /fornecedores/:id
 DELETE /fornecedores/:id
 GET    /fornecedor/:id
-```
+~~~
 
 Também estão disponíveis as rotas de listagem e CRUD no formato singular:
 
-```text
+~~~text
 GET    /fornecedor
 POST   /fornecedor
 PUT    /fornecedor/:id
 DELETE /fornecedor/:id
-```
+~~~
 
 ### Produtos
 
-```text
+~~~text
 GET    /produtos
 POST   /produtos
 PUT    /produtos/:id
 DELETE /produtos/:id
 GET    /produto/:id
-```
+~~~
 
 Também estão disponíveis as rotas de listagem e CRUD no formato singular:
 
-```text
+~~~text
 GET    /produto
 POST   /produto
 PUT    /produto/:id
 DELETE /produto/:id
-```
+~~~
 
 ---
 
@@ -267,20 +267,20 @@ DELETE /produto/:id
 
 Requisição:
 
-```http
+~~~http
 POST /categorias
 Content-Type: application/json
-```
+~~~
 
-```json
+~~~json
 {
   "nome": "Eletrônicos"
 }
-```
+~~~
 
 Exemplo de resposta:
 
-```json
+~~~json
 {
   "data": {
     "id": 1,
@@ -289,35 +289,35 @@ Exemplo de resposta:
   "error": null,
   "meta": null
 }
-```
+~~~
 
 ### Cadastrar um fornecedor
 
 Requisição:
 
-```http
+~~~http
 POST /fornecedores
 Content-Type: application/json
-```
+~~~
 
-```json
+~~~json
 {
   "nome": "Fornecedor Exemplo",
   "email": "fornecedor@email.com",
   "telefone": "81999999999"
 }
-```
+~~~
 
 ### Cadastrar um produto
 
 Requisição:
 
-```http
+~~~http
 POST /produtos
 Content-Type: application/json
-```
+~~~
 
-```json
+~~~json
 {
   "nome": "Notebook",
   "sku": "NOTE123",
@@ -325,11 +325,11 @@ Content-Type: application/json
   "estoque": 10,
   "categoria_id": 1
 }
-```
+~~~
 
 Exemplo de resposta:
 
-```json
+~~~json
 {
   "data": {
     "id": 1,
@@ -342,7 +342,7 @@ Exemplo de resposta:
   "error": null,
   "meta": null
 }
-```
+~~~
 
 ---
 
@@ -352,9 +352,9 @@ Os endpoints de listagem possuem suporte a paginação e busca por nome.
 
 Exemplo:
 
-```text
+~~~text
 GET /produtos?page=1&limit=10&q=notebook
-```
+~~~
 
 Onde:
 
@@ -364,7 +364,7 @@ Onde:
 
 Exemplo de resposta:
 
-```json
+~~~json
 {
   "data": [
     {
@@ -383,9 +383,67 @@ Exemplo de resposta:
     "limit": 10
   }
 }
-```
+~~~
 
 No frontend, a listagem de produtos utiliza inicialmente `5` registros por página e permite realizar a busca pelo nome do produto.
+
+---
+
+## Exemplos de consultas parametrizadas
+
+As consultas SQL do backend utilizam parâmetros para evitar a concatenação direta de valores fornecidos pelo usuário na string da query.
+
+### Exemplo de busca por nome
+
+Uma forma inadequada seria concatenar diretamente o valor da busca na consulta:
+
+~~~go
+query := "SELECT * FROM produto WHERE nome ILIKE '%" + busca + "%'"
+~~~
+
+Nesse caso, o valor recebido é inserido diretamente na string SQL.
+
+No projeto, a consulta é parametrizada:
+
+~~~go
+query := "SELECT * FROM produto WHERE nome ILIKE $1"
+rows, err := db.Query(query, "%"+busca+"%")
+~~~
+
+O `$1` representa o parâmetro que será enviado separadamente para o banco de dados.
+
+### Exemplo de busca por ID
+
+Em vez de inserir o ID diretamente na string:
+
+~~~go
+query := "SELECT * FROM produto WHERE id = " + id
+~~~
+
+A consulta pode utilizar um parâmetro:
+
+~~~go
+query := "SELECT * FROM produto WHERE id = $1"
+row := db.QueryRow(query, id)
+~~~
+
+### Exemplo de inserção
+
+Os valores também são enviados separadamente em operações de inserção:
+
+~~~go
+query := `
+    INSERT INTO categoria (nome)
+    VALUES ($1)
+    RETURNING id
+`
+
+err := db.QueryRow(query, categoria.Nome).Scan(&categoria.ID)
+~~~
+
+Dessa forma, a estrutura da consulta SQL permanece separada dos valores recebidos pela aplicação.
+
+> **Observação:** o artigo utilizado como referência apresenta exemplos com MySQL, que utiliza `?` como placeholder. Como este projeto utiliza PostgreSQL, são utilizados placeholders como `$1`, `$2`, `$3`, entre outros.
 
 ---
 
@@ -395,9 +453,9 @@ O projeto utiliza **PostgreSQL**.
 
 O banco é executado através de um container Docker e seus dados são armazenados em um volume:
 
-```text
+~~~text
 postgres_data
-```
+~~~
 
 Isso permite que os dados continuem disponíveis mesmo após a parada dos containers.
 
@@ -413,13 +471,13 @@ A categoria não pode ser excluída enquanto houver produtos vinculados a ela.
 
 As configurações de conexão são definidas através de variáveis de ambiente utilizadas pelo backend:
 
-```text
+~~~text
 DB_HOST
 DB_PORT
 DB_USER
 DB_PASSWORD
 DB_NAME
-```
+~~~
 
 ---
 
@@ -427,9 +485,9 @@ DB_NAME
 
 Os testes do backend podem ser executados dentro da pasta `backend` com:
 
-```bash
+~~~bash
 go test ./...
-```
+~~~
 
 O comando executa os testes disponíveis nos diferentes pacotes do backend.
 
@@ -441,15 +499,15 @@ Os testes incluem validações dos serviços e testes do controller de categoria
 
 Para parar os containers:
 
-```bash
+~~~bash
 docker compose down
-```
+~~~
 
 Para parar os containers e também remover os volumes:
 
-```bash
+~~~bash
 docker compose down -v
-```
+~~~
 
 > **Atenção:** o segundo comando remove o volume do PostgreSQL e, consequentemente, os dados armazenados nele.
 
@@ -459,33 +517,33 @@ docker compose down -v
 
 Para verificar os containers em execução:
 
-```bash
+~~~bash
 docker compose ps
-```
+~~~
 
 Para visualizar os logs:
 
-```bash
+~~~bash
 docker compose logs
-```
+~~~
 
 Para visualizar os logs de um serviço específico:
 
-```bash
+~~~bash
 docker compose logs backend
-```
+~~~
 
 ou:
 
-```bash
+~~~bash
 docker compose logs frontend
-```
+~~~
 
 ou:
 
-```bash
+~~~bash
 docker compose logs postgres
-```
+~~~
 
 ---
 
@@ -493,9 +551,9 @@ docker compose logs postgres
 
 A aplicação foi executada e testada utilizando:
 
-```bash
+~~~bash
 docker compose up --build
-```
+~~~
 
 Durante a inicialização, foram criados e executados:
 
